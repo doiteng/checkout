@@ -1424,6 +1424,7 @@ const gitCommandManager = __importStar(__nccwpck_require__(738));
 const gitDirectoryHelper = __importStar(__nccwpck_require__(8609));
 const githubApiHelper = __importStar(__nccwpck_require__(138));
 const io = __importStar(__nccwpck_require__(7436));
+const fs = __importStar(__nccwpck_require__(7147));
 const path = __importStar(__nccwpck_require__(1017));
 const refHelper = __importStar(__nccwpck_require__(8601));
 const stateHelper = __importStar(__nccwpck_require__(4866));
@@ -1519,6 +1520,23 @@ function getSource(settings) {
             // LFS install
             if (settings.lfs) {
                 yield git.lfsInstall();
+            }
+            // Set up alternates from mirror (if configured and available)
+            if (settings.mirrorPath) {
+                const mirrorObjects = path.join(settings.mirrorPath, 'objects');
+                if (fsHelper.directoryExistsSync(mirrorObjects)) {
+                    core.startGroup('Configuring mirror alternates');
+                    const alternatesDir = path.join(settings.repositoryPath, '.git', 'objects', 'info');
+                    fs.mkdirSync(alternatesDir, { recursive: true });
+                    fs.writeFileSync(path.join(alternatesDir, 'alternates'), mirrorObjects);
+                    // Mark mirror as safe directory (may be owned by a different user)
+                    yield git.config('safe.directory', settings.mirrorPath, true /* global */, true /* add */);
+                    core.info(`Mirror configured at ${settings.mirrorPath}`);
+                    core.endGroup();
+                }
+                else {
+                    core.info(`Mirror path ${settings.mirrorPath} not found, fetching from remote`);
+                }
             }
             // Fetch
             core.startGroup('Fetching the repository');
@@ -2095,6 +2113,9 @@ function getInputs() {
         // Determine the GitHub URL that the repository is being hosted from
         result.githubServerUrl = core.getInput('github-server-url');
         core.debug(`GitHub Host URL = ${result.githubServerUrl}`);
+        // Mirror path
+        result.mirrorPath = core.getInput('mirror-path');
+        core.debug(`mirror path = ${result.mirrorPath}`);
         return result;
     });
 }

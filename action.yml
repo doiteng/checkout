@@ -98,6 +98,13 @@ inputs:
   github-server-url:
     description: The base URL for the GitHub instance that you are trying to clone from, will use environment defaults to fetch from the same instance that the workflow is running from unless specified. Example URLs are https://github.com or https://my-ghes-server.example.com
     required: false
+  mirror-path:
+    description: >
+      Path to a local bare git mirror to use as an alternates object store.
+      If the path exists, git will resolve objects from it first, reducing
+      network traffic. If it does not exist, the checkout proceeds normally.
+    required: false
+    default: ''
 outputs:
   ref:
     description: 'The branch, tag or SHA that was checked out'

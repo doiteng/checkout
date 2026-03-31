@@ -5,6 +5,7 @@ import * as gitCommandManager from './git-command-manager'
 import * as gitDirectoryHelper from './git-directory-helper'
 import * as githubApiHelper from './github-api-helper'
 import * as io from '@actions/io'
+import * as fs from 'fs'
 import * as path from 'path'
 import * as refHelper from './ref-helper'
 import * as stateHelper from './state-helper'
@@ -152,6 +153,35 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
     // LFS install
     if (settings.lfs) {
       await git.lfsInstall()
+    }
+
+    // Set up alternates from mirror (if configured and available)
+    if (settings.mirrorPath) {
+      const mirrorObjects = path.join(settings.mirrorPath, 'objects')
+      if (fsHelper.directoryExistsSync(mirrorObjects)) {
+        core.startGroup('Configuring mirror alternates')
+        const alternatesDir = path.join(
+          settings.repositoryPath,
+          '.git',
+          'objects',
+          'info'
+        )
+        fs.mkdirSync(alternatesDir, {recursive: true})
+        fs.writeFileSync(path.join(alternatesDir, 'alternates'), mirrorObjects)
+        // Mark mirror as safe directory (may be owned by a different user)
+        await git.config(
+          'safe.directory',
+          settings.mirrorPath,
+          true /* global */,
+          true /* add */
+        )
+        core.info(`Mirror configured at ${settings.mirrorPath}`)
+        core.endGroup()
+      } else {
+        core.info(
+          `Mirror path ${settings.mirrorPath} not found, fetching from remote`
+        )
+      }
     }
 
     // Fetch

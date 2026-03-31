@@ -118,4 +118,10 @@ export interface IGitSourceSettings {
    * User override on the GitHub Server/Host URL that hosts the repository to be cloned
    */
   githubServerUrl: string | undefined
+
+  /**
+   * Path to a local bare git mirror to use as an alternates object store.
+   * If set, objects are resolved from this mirror first, reducing network traffic.
+   */
+  mirrorPath: string
 }
