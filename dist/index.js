@@ -1531,6 +1531,41 @@ function getSource(settings) {
                     fs.writeFileSync(path.join(alternatesDir, 'alternates'), mirrorObjects);
                     // Mark mirror as safe directory (may be owned by a different user)
                     yield git.config('safe.directory', settings.mirrorPath, true /* global */, true /* add */);
+                    // Seed refs from mirror by copying packed-refs directly (no git
+                    // negotiation, no per-ref NFS round-trips — just one file read).
+                    const mirrorPackedRefs = path.join(settings.mirrorPath, 'packed-refs');
+                    if (fsHelper.fileExistsSync(mirrorPackedRefs)) {
+                        core.info('Seeding refs from mirror packed-refs...');
+                        const content = fs.readFileSync(mirrorPackedRefs, 'utf8');
+                        const lines = [];
+                        let lastRefIncluded = false;
+                        for (const line of content.split('\n')) {
+                            if (line.startsWith('#') || line.trim() === '') {
+                                lines.push(line);
+                            }
+                            else if (line.startsWith('^')) {
+                                // Peeled tag line — only include if the preceding ref was kept
+                                if (lastRefIncluded) {
+                                    lines.push(line);
+                                }
+                            }
+                            else if (line.includes(' refs/heads/')) {
+                                lines.push(line.replace(' refs/heads/', ' refs/remotes/origin/'));
+                                lastRefIncluded = true;
+                            }
+                            else if (line.includes(' refs/tags/')) {
+                                lines.push(line);
+                                lastRefIncluded = true;
+                            }
+                            else {
+                                // Skip other refs (refs/pull/*, etc.)
+                                lastRefIncluded = false;
+                            }
+                        }
+                        const localPackedRefs = path.join(settings.repositoryPath, '.git', 'packed-refs');
+                        fs.writeFileSync(localPackedRefs, lines.join('\n'));
+                        core.info(`Seeded refs from mirror (${lines.filter(l => !l.startsWith('#') && !l.startsWith('^') && l.trim() !== '').length} refs)`);
+                    }
                     core.info(`Mirror configured at ${settings.mirrorPath}`);
                     core.endGroup();
                 }
