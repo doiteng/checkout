@@ -16,10 +16,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.x
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - run: npm ci
       - run: npm run build
       - run: npm run format-check
@@ -37,7 +37,7 @@ jobs:
     steps:
       # Clone this repo
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       # Basic checkout
       - name: Checkout basic
@@ -188,7 +188,7 @@ jobs:
       # Worktree credentials in container step
       - name: Verify worktree credentials in container step
         if: runner.os == 'Linux'
-        uses: docker://bitnami/git:latest
+        uses: docker://bitnami/git:latest@sha256:8e6fc549e99947604b9fa2561a108f147b17346aac05117442c4c4f088e61a3c
         with:
           args: bash __test__/verify-worktree.sh worktree-test container-worktree-branch
 
@@ -217,11 +217,11 @@ jobs:
   test-proxy:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/actions/test-ubuntu-git:main.20240221.114913.703z
+      image: ghcr.io/actions/test-ubuntu-git:main.20240221.114913.703z@sha256:c596ff4dc9015f520f30f37ccf210d50916cbcedf917813d6b9cb42128d53b91
       options: --dns 127.0.0.1
     services:
       squid-proxy:
-        image: ubuntu/squid:latest
+        image: ubuntu/squid:latest@sha256:6a097f68bae708cedbabd6188d68c7e2e7a38cedd05a176e1cc0ba29e3bbe029
         ports:
           - 3128:3128
     env:
@@ -229,7 +229,7 @@ jobs:
     steps:
       # Clone this repo
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       # Basic checkout using git
       - name: Checkout basic
@@ -261,7 +261,7 @@ jobs:
     steps:
       # Clone this repo
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       # Basic checkout using git
       - name: Checkout basic
@@ -287,11 +287,11 @@ jobs:
 
   test-git-container:
     runs-on: ubuntu-latest
-    container: bitnami/git:latest
+    container: bitnami/git:latest@sha256:8e6fc549e99947604b9fa2561a108f147b17346aac05117442c4c4f088e61a3c
     steps:
       # Clone this repo
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: localClone
 
@@ -319,7 +319,7 @@ jobs:
 
       # needed to make checkout post cleanup succeed
       - name: Fix Checkout v6
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: localClone
 
@@ -328,7 +328,7 @@ jobs:
     steps:
       # Clone this repo
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: actions-checkout
 

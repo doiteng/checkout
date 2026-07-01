@@ -1,7 +1,7 @@
 # Defines the test-ubuntu-git Container Image.
 # Consumed by actions/checkout CI/CD validation workflows.
 
-FROM ubuntu:latest
+FROM ubuntu:latest@sha256:53958ec7b67c2c9355df922dd08dbf0360611f8c3cdb656875e81873db9ffdba
 
 RUN apt update
 RUN apt install -y git
